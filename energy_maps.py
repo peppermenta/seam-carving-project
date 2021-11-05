@@ -62,33 +62,6 @@ def computeHistogram(img):
             # updating frequency count of observed intensity
             p = int(pixel)
             histogram[p] = histogram[p] + 1
-    # displaying image histogram
-    x = np.linspace(0, 255, 256)
-    fig = plt.figure()
-    ax = fig.add_axes([0, 0, 1, 1])
-    ax.bar(x, histogram)
-    plt.title('Image histogram')
-    plt.show()
-    # computing mode of image
-    mode = -1
-    count = 0
-    # iterating through intensity frequency array for max intensity
-    for i in range(256):
-        if histogram[i] > count:
-            count = histogram[i]
-            mode = i
-    modality = 0
-    for i in range(254):
-        if histogram[i + 1] > histogram[i] and histogram[i + 1] > histogram[i + 2]:
-            modality += 1
-    if histogram[0] > histogram[1]:
-        modality += 1
-    if histogram[255] > histogram[254]:
-        modality += 1
-    # print("Mode of histogram: " + str(mode))
-    # print("Number of occurences: " + str(count))
-    # print("Modality of histogram: " + str(modality))
-    # returning computed mode and histogram of the image
     return histogram
 
 def fasterOtsu(histogram, img):
@@ -187,29 +160,32 @@ def getBestComp(visited, binaryImg, row, col):
             X = x[index]
             Y = y[index]
             if(X >= 0 and X < m and Y >= 0 and Y < n and visited[X][Y] == 0 and binaryImg[X][Y] == 0):
-                visited[X][Y] = 1
+                visited[X][Y] = 255
                 x_coords.append(X)
                 y_coords.append(Y)
-    
+
+def MajorBlobMap(img):
+    grayScale = convert_to_grayscale(img)
+    histogram = computeHistogram(grayScale)
+    threshold = fasterOtsu(histogram, grayScale)
+    binary_img = binarize(grayScale, threshold)
+    compX, compY = getMajorCompLocation(binary_img)
+    visited = np.zeros(binary_img.shape)
+    getBestComp(visited, binary_img, compX, compY)
+    return visited
+
 
 img = Image.open('major.jpeg')
 img = np.array(img)
-print(img.shape)
-plt.imshow(img)
-plt.show()
-img = convert_to_grayscale(img)
-plt.imshow(img, cmap='gray')
-plt.show()
-print(img.shape)
-histogram = computeHistogram(img)
-threshold = fasterOtsu(histogram, img)
-print(threshold)
-binary_img = binarize(img, threshold)
-plt.imshow(binary_img, cmap='gray')
-plt.show()
-compX, compY = getMajorCompLocation(binary_img)
-print(compX, compY)
-visited = np.zeros(binary_img.shape)
-getBestComp(visited, binary_img, compX, compY)
+# img = convert_to_grayscale(img)
+# histogram = computeHistogram(img)
+# threshold = fasterOtsu(histogram, img)
+# binary_img = binarize(img, threshold)
+# compX, compY = getMajorCompLocation(binary_img)
+# visited = np.zeros(binary_img.shape)
+# getBestComp(visited, binary_img, compX, compY)
+# plt.imshow(visited, cmap='gray')
+# plt.show()
+visited = MajorBlobMap(img)
 plt.imshow(visited, cmap='gray')
 plt.show()
