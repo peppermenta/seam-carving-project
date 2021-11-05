@@ -122,7 +122,7 @@ def fasterOtsu(histogram, img):
             threshold = t + 1
     # returning computed optimal threshold
     # print(sigma_2b)
-    return threshold + 1
+    return threshold
 
 def binarize(img, threshold):
     # initializing binarized version to all zeros
@@ -135,6 +135,62 @@ def binarize(img, threshold):
     # displaying binarized image
     plt.imshow(binaryImg, cmap='gray')
     return binaryImg
+
+def DFS(visited, binaryImg, row, col):
+    count = 1
+    visited[row][col] = 1
+    x_coords = [row]
+    y_coords = [col]
+    m, n = binaryImg.shape
+    while(len(x_coords) != 0):
+        r = x_coords.pop()
+        c = y_coords.pop()
+        x = [r - 1, r - 1, r - 1, r, r, r + 1, r + 1, r + 1]
+        y = [c - 1, c, c + 1, c - 1, c + 1, c - 1, c, c + 1]
+        for index in range(8):
+            X = x[index]
+            Y = y[index]
+            if(X >= 0 and X < m and Y >= 0 and Y < n and visited[X][Y] == 0 and binaryImg[X][Y] == 0):
+                count += 1
+                visited[X][Y] = 1
+                x_coords.append(X)
+                y_coords.append(Y)
+    return count
+            
+
+def getMajorCompLocation(binaryImg):
+    coordinates = [-1, -1]
+    bestCompSize = 0
+    visited = np.zeros(binaryImg.shape)
+    for row in range(visited.shape[0]):
+        for col in range(visited.shape[1]):
+            if visited[row][col] == 1 or binaryImg[row][col] != 0:
+                continue
+            compSize = DFS(visited, binaryImg, row, col)
+            if compSize > bestCompSize:
+                bestCompSize = compSize
+                coordinates = [row, col]
+    return coordinates
+
+
+def getBestComp(visited, binaryImg, row, col):
+    visited[row][col] = 1
+    x_coords = [row]
+    y_coords = [col]
+    m, n = binaryImg.shape
+    while(len(x_coords) != 0):
+        r = x_coords.pop()
+        c = y_coords.pop()
+        x = [r - 1, r - 1, r - 1, r, r, r + 1, r + 1, r + 1]
+        y = [c - 1, c, c + 1, c - 1, c + 1, c - 1, c, c + 1]
+        for index in range(8):
+            X = x[index]
+            Y = y[index]
+            if(X >= 0 and X < m and Y >= 0 and Y < n and visited[X][Y] == 0 and binaryImg[X][Y] == 0):
+                visited[X][Y] = 1
+                x_coords.append(X)
+                y_coords.append(Y)
+    
 
 img = Image.open('major.jpeg')
 img = np.array(img)
@@ -150,4 +206,10 @@ threshold = fasterOtsu(histogram, img)
 print(threshold)
 binary_img = binarize(img, threshold)
 plt.imshow(binary_img, cmap='gray')
+plt.show()
+compX, compY = getMajorCompLocation(binary_img)
+print(compX, compY)
+visited = np.zeros(binary_img.shape)
+getBestComp(visited, binary_img, compX, compY)
+plt.imshow(visited, cmap='gray')
 plt.show()
