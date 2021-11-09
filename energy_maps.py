@@ -1,7 +1,6 @@
 import numpy as np
 from PIL import Image
 from scipy.ndimage.filters import convolve
-import matplotlib.pyplot as plt
 
 def gradient_energy_map(img):
   '''
@@ -106,7 +105,6 @@ def binarize(img, threshold):
             if img[i][j] >= threshold:
                 binaryImg[i][j] = 255
     # displaying binarized image
-    plt.imshow(binaryImg, cmap='gray')
     return binaryImg
 
 def DFS(visited, binaryImg, row, col):
@@ -174,18 +172,3 @@ def MajorBlobMap(img):
     getBestComp(visited, binary_img, compX, compY)
     return visited
 
-
-img = Image.open('major.jpeg')
-img = np.array(img)
-# img = convert_to_grayscale(img)
-# histogram = computeHistogram(img)
-# threshold = fasterOtsu(histogram, img)
-# binary_img = binarize(img, threshold)
-# compX, compY = getMajorCompLocation(binary_img)
-# visited = np.zeros(binary_img.shape)
-# getBestComp(visited, binary_img, compX, compY)
-# plt.imshow(visited, cmap='gray')
-# plt.show()
-visited = MajorBlobMap(img)
-plt.imshow(visited, cmap='gray')
-plt.show()

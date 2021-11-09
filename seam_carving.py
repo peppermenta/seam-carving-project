@@ -1,9 +1,14 @@
 import sys
+
+from PIL import Image
 from tqdm import trange
 import numpy as np
-from imageio import imread, imwrite
+# from imageio import imread, imwrite
 from scipy.ndimage.filters import convolve
+from energy_maps import gradient_energy_map
+from energy_maps import MajorBlobMap
 import numba
+import matplotlib.pyplot as plt
 
 def crop_c(img, scale_c, energy_map_fn):
   '''
@@ -130,3 +135,22 @@ def minimum_seam(img, energy_map_fn):
       M[i, j] += min_energy
 
   return M, backtrack
+
+img = Image.open('major.jpeg')
+img = np.array(img)
+resize1 = crop_c(img, 0.8, gradient_energy_map)
+resize2 = crop_c(img, 0.8, MajorBlobMap)
+fig = plt.figure(figsize=(10, 7))
+rows = 1
+cols = 3
+fig.add_subplot(rows, cols, 1)
+plt.imshow(img)
+fig.add_subplot(rows, cols, 2)
+plt.imshow(resize1)
+fig.add_subplot(rows, cols, 3)
+plt.imshow(resize2)
+plt.show()
+vanilla_resize = Image.fromarray(resize1)
+vanilla_resize.save('vanilla.png')
+major_resize = Image.fromarray(resize2)
+major_resize.save('majorResize.png')
