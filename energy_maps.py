@@ -205,5 +205,6 @@ def saliency_energy_map(img):
   img_tensor = transform(img).unsqueeze(0).to(device)
   target_class = torch.argmax(model(img_tensor),dim=1).detach().cpu().item()
   saliency_map = ig.attribute(img_tensor,target=target_class,n_steps=200,internal_batch_size=1)
-
-  return saliency_map.squeeze(0).detach().cpu().numpy()
+  I = np.sum(np.abs(np.transpose(saliency_map.squeeze(0).detach().cpu().numpy(), (1,2,0))), axis=2)
+  I = (I-I.min())/(I.max()-I.min())
+  return I
