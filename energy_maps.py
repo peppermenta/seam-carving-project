@@ -1,6 +1,9 @@
 import numpy as np
 from PIL import Image
 from scipy.ndimage.filters import convolve
+import torchvision
+import torch
+from captum.attr import IntegratedGradients
 
 def gradient_energy_map(img):
   '''
@@ -172,3 +175,35 @@ def MajorBlobMap(img):
     getBestComp(visited, binary_img, compX, compY)
     return visited
 
+def saliency_energy_map(img):
+  '''
+  Energy map using deep-learning based saliency methods (Integrated Gradients)
+  Note that this particular version works best with ImageNet images due to the model chosen
+
+  Author: Tarun Ram (AI19BTECH11004)
+
+  Parameters
+  ----------------------------
+  img : np.ndarray
+    The image to compute energy map for 
+
+  Returns
+  ----------------------------
+  energy_map: np.ndarray
+    The computed energy map
+  '''
+  device = 'cuda' if torch.cuda.is_available() else 'cpu'
+  model = torchvision.models.resnet50(pretrained=True).to(device)
+  model.eval()
+  ig = IntegratedGradients(model)
+  transform = torchvision.transforms.Compose([
+    torchvision.transforms.ToTensor(),
+    torchvision.transforms.Normalize(mean = [ 0.485, 0.456, 0.406 ],
+                         std = [ 0.229, 0.224, 0.225 ])
+  ])
+
+  img_tensor = transform(img).unsqueeze(0).to(device)
+  target_class = torch.argmax(model(img_tensor),dim=1).detach().cpu().item()
+  saliency_map = ig.attribute(img_tensor,target=target_class,n_steps=200,internal_batch_size=1)
+
+  return saliency_map.squeeze(0).detach().cpu().numpy()
