@@ -15,6 +15,6 @@ Standard seam carving algorithm used in the first paper is employed here.
 
 Contributors:
 - Tarun Ram - Seam carving algorithm and gradient energy map
-- Agraj Srivastava - Major Blob energy map
+- Agraj Srivastava - Major Blob energy map and alternative seam carving implementation with faster execution
 - Mansi Nanavati - DINO Self Attention energy map
 - Soumi Chakraborty - Researching combination of energy maps 
