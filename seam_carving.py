@@ -3,10 +3,7 @@ import sys
 from PIL import Image
 from tqdm import trange
 import numpy as np
-# from imageio import imread, imwrite
 from scipy.ndimage.filters import convolve
-from energy_maps import gradient_energy_map
-from energy_maps import MajorBlobMap
 import numba
 import matplotlib.pyplot as plt
 
@@ -135,7 +132,6 @@ def minimum_seam(img, energy_map_fn):
       M[i, j] += min_energy
 
   return M, backtrack
-
 
 
 @numba.jit
