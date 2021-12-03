@@ -139,6 +139,65 @@ def minimum_seam(img, energy_map_fn):
 
   return M, backtrack
 
+def crop_c_eval(img, saliency_img, scale_c, energy_map_fn):
+  '''
+  Scale down image by cropping columns
+  Code modified from https://karthikkaranth.me/blog/implementing-seam-carving-with-python/
+
+  Parameters
+  --------------------------------
+  img: np.ndarray
+    The image to resize
+  scale_c: float
+    Target scale to resize image
+  energy_map_fn: function
+    Function that takes an img as input and returns the energy map
+
+  Returns
+  -------------------------------
+  out: np.ndarray
+    Resized image
+  '''
+  r, c, _ = img.shape
+  # print(r,c)
+  new_c = int(scale_c * c)
+
+  for i in trange(c - new_c):
+    img = carve_column(img, energy_map_fn)
+    saliency_img = carve_column(saliency_img, energy_map_fn)
+  return img, saliency_img
+
+def crop_r_eval(img, saliency_img, scale_r, energy_map_fn):
+  '''
+  Scale down image by cropping rows
+  Code modified from https://karthikkaranth.me/blog/implementing-seam-carving-with-python/
+
+  Parameters
+  --------------------------------
+  img: np.ndarray
+    The image to resize
+  scale_r: float
+    Target scale to resize image
+  energy_map_fn: function
+    Function that takes an img as input and returns the energy map
+
+  Returns
+  -------------------------------
+  out: np.ndarray
+    Resized image
+  '''
+  img = np.rot90(img, 1, (0, 1))
+  saliency_img = np.rot90(saliency_img, 1, (0, 1))
+
+  img = crop_c(img, scale_r, energy_map_fn)
+  saliency_img = crop_c(saliency_img, scale_r, energy_map_fn)
+
+  img = np.rot90(img, 3, (0, 1))
+  saliency_img = np.rot90(saliency_img, 3, (0, 1))
+
+  return img, saliency_img
+
+
 # img = Image.open('eiffel_mid.jpg')
 # img = Image.open('input/sunset2.jpg')
 # img = Image.open('input/boating.jpg')
