@@ -14,7 +14,7 @@ Standard seam carving algorithm used in the first paper is employed here.
 - Check out `generate_dino_maps.py` to understand how self-attention maps are generated.
 
 Contributors:
-- Tarun Ram - Seam carving algorithm and gradient energy map
+- Tarun Ram - Original Seam carving algorithm, Original Gradient Energy Map and Integrated Gradients based Saliency Energy Map
 - Agraj Srivastava - Major Blob energy map and alternative seam carving implementation with faster execution
 - Mansi Nanavati - DINO Self Attention energy map
 - Soumi Chakraborty - Researching combination of energy maps and implementing evaluation metric to compare energy maps
