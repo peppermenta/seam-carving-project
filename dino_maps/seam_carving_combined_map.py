@@ -1,3 +1,5 @@
+# Worked on by Mansi Nanavati
+
 from PIL import Image
 from tqdm import trange
 import numpy as np

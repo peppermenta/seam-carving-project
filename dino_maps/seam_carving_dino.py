@@ -1,4 +1,4 @@
-import sys
+# Worked on by Mansi Nanavati
 
 from PIL import Image
 from tqdm import trange
