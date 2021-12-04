@@ -1,16 +1,16 @@
-import sys
-
 from PIL import Image
 from tqdm import trange
 import numpy as np
-from scipy.ndimage.filters import convolve
 from energy_maps import gradient_energy_map
 from generate_dino_map import dino_energy_map
 from energy_maps import MajorBlobMap
 import numba
 import matplotlib.pyplot as plt
 
-def crop_c(img, scale_c, energy_map_fn):
+
+energy_maps = [MajorBlobMap, dino_energy_map]
+
+def crop_c(img, scale_c):
   '''
   Scale down image by cropping columns
   Code modified from https://karthikkaranth.me/blog/implementing-seam-carving-with-python/
@@ -34,11 +34,11 @@ def crop_c(img, scale_c, energy_map_fn):
   new_c = int(scale_c * c)
 
   for i in trange(c - new_c):
-    img = carve_column(img, energy_map_fn)
+    img = carve_column(img)
 
   return img
 
-def crop_r(img, scale_r, energy_map_fn):
+def crop_r(img, scale_r):
   '''
   Scale down image by cropping rows
   Code modified from https://karthikkaranth.me/blog/implementing-seam-carving-with-python/
@@ -58,12 +58,12 @@ def crop_r(img, scale_r, energy_map_fn):
     Resized image
   '''
   img = np.rot90(img, 1, (0, 1))
-  img = crop_c(img, scale_r, energy_map_fn)
+  img = crop_c(img, scale_r)
   img = np.rot90(img, 3, (0, 1))
   return img
 
 @numba.jit
-def carve_column(img, energy_map_fn):
+def carve_column(img):
   '''
   Remove a column from an image using seam carving
   Code modified from https://karthikkaranth.me/blog/implementing-seam-carving-with-python/
@@ -82,7 +82,7 @@ def carve_column(img, energy_map_fn):
   '''
   r, c, _ = img.shape
 
-  M, backtrack = minimum_seam(img, energy_map_fn)
+  M, backtrack = minimum_seam(img)
   mask = np.ones((r, c), dtype=np.bool)
 
   j = np.argmin(M[-1])
@@ -95,7 +95,7 @@ def carve_column(img, energy_map_fn):
   return img
 
 @numba.jit
-def minimum_seam(img, energy_map_fn):
+def minimum_seam(img):
   '''
   Find the minimum seam for seam carving using dynamic programming
   Code modified from https://karthikkaranth.me/blog/implementing-seam-carving-with-python/
@@ -116,8 +116,18 @@ def minimum_seam(img, energy_map_fn):
     Minimum seam backtracking, same size as M
   '''
   r, c, _ = img.shape
-  energy_map = energy_map_fn(img)
+  # energy_map = energy_map_fn(img)
+  energy_map = np.zeros((r,c))
+  temp = np.zeros((r,c))
+  for func in energy_maps:
+    # print(func(img))
+    temp = func(img)
+    # print(np.max(temp), np.min(temp))
+    energy_map = np.maximum(np.divide(temp, np.linalg.norm(temp)), energy_map)
+    # print(energy_map)
   # print("energy map shape", energy_map.shape, img.shape)
+  
+  energy_map += gradient_energy_map(img)
 
   M = energy_map.copy()
   backtrack = np.zeros_like(M, dtype=np.int)
@@ -138,32 +148,30 @@ def minimum_seam(img, energy_map_fn):
 
   return M, backtrack
 
-# img = Image.open('eiffel_mid.jpg')
+img = Image.open('input\eiffel.jpg')
 # img = Image.open('input/sunset2.jpg')
 # img = Image.open('input/boating.jpg')
 # img = Image.open('input/monkey.jpg')
 # img = Image.open('input/bike.jpg')
 # img = Image.open('input/beach.jpg')
-img = Image.open('input/dog.jpg')
+# img = Image.open('input/dog.jpg')
 img = np.array(img)
 
-energy_maps = [MajorBlobMap, dino_energy_map]
-
-resize1 = crop_c(img, 0.8, gradient_energy_map)
-resize2 = crop_c(img, 0.8, dino_energy_map)
+resize1 = crop_c(img, 0.8)
+# resize2 = crop_c(img, 0.8)
 # resize1 = crop_r(img, 0.8, gradient_energy_map)
 # resize2 = crop_r(img, 0.8, dino_energy_map)
 vanilla_resize = Image.fromarray(resize1)
-vanilla_resize.save('output/dog_vanilla.png')
-dino_resize = Image.fromarray(resize2)
-dino_resize.save('output/dog_dino.png')
+vanilla_resize.save('output/eiffel_best_map.png')
+# dino_resize = Image.fromarray(resize2)
+# dino_resize.save('output/dog_dino.png')
 fig = plt.figure(figsize=(10, 7))
 rows = 1
-cols = 3
+cols = 2
 fig.add_subplot(rows, cols, 1)
 plt.imshow(img)
 fig.add_subplot(rows, cols, 2)
 plt.imshow(resize1)
-fig.add_subplot(rows, cols, 3)
-plt.imshow(resize2)
+# fig.add_subplot(rows, cols, 3)
+# plt.imshow(resize2)
 plt.show()
