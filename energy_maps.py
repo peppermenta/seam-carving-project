@@ -1,3 +1,5 @@
+# Worked on by Tarun Ram and Agraj Srivastava
+
 import numpy as np
 from PIL import Image
 from scipy.ndimage.filters import convolve
