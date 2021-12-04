@@ -6,6 +6,7 @@ import numpy as np
 from scipy.ndimage.filters import convolve
 import numba
 import matplotlib.pyplot as plt
+from energy_maps import MajorBlobMap
 
 def crop_c(img, scale_c, energy_map_fn):
   '''
@@ -243,24 +244,81 @@ def crop_r_fast(img, scale_r, energy_map_fn):
   img = np.rot90(img, 3, (0, 1))
   return img
 
+def crop_c_fast_eval(img, saliency_img, scale_c, energy_map_fn):
+  # print("shape:", img.shape, saliency_img.shape)
+  '''
+  Scale down image by cropping columns
+  Code modified from https://karthikkaranth.me/blog/implementing-seam-carving-with-python/
 
-# img = Image.open('castle.jpg')
+  Parameters
+  --------------------------------
+  img: np.ndarray
+    The image to resize
+  scale_c: float
+    Target scale to resize image
+  energy_map_fn: function
+    Function that takes an img as input and returns the energy map
+
+  Returns
+  -------------------------------
+  out: np.ndarray
+    Resized image
+  '''
+  energy_map = energy_map_fn(img)
+  r, c, _ = img.shape
+  new_c = int(scale_c * c)
+
+  for i in trange(c - new_c):
+    saliency_img, temp = carve_column_fast(saliency_img, energy_map)
+    img, energy_map = carve_column_fast(img, energy_map)
+
+  return img, saliency_img
+
+def crop_r_fast_eval(img, saliency_img, scale_r, energy_map_fn):
+  '''
+  Scale down image by cropping rows
+  Code modified from https://karthikkaranth.me/blog/implementing-seam-carving-with-python/
+
+  Parameters
+  --------------------------------
+  img: np.ndarray
+    The image to resize
+  scale_r: float
+    Target scale to resize image
+  energy_map_fn: function
+    Function that takes an img as input and returns the energy map
+
+  Returns
+  -------------------------------
+  out: np.ndarray
+    Resized image
+  '''
+  img = np.rot90(img, 1, (0, 1))
+  saliency_img = np.rot90(saliency_img, 1, (0, 1))
+  img, saliency_img = crop_c_fast_eval(img, saliency_img, scale_r, energy_map_fn)
+  img = np.rot90(img, 3, (0, 1))
+  saliency_img = np.rot90(saliency_img, 3, (0, 1))    
+
+  return img, saliency_img
+
+
+# img = Image.open('major.jpeg')
 # img = np.array(img)
-# resize1 = crop_c(img, 0.8, MajorBlobMap)
-# resize2 = crop_c_fast(img, 0.8, gradient_energy_map)
-# resize1 = crop_r_fast(img, 0.9, MajorBlobMap)
-# resize2 = crop_r(img, 0.9, MajorBlobMap)
+# # resize1 = crop_c(img, 0.8, MajorBlobMap)
+# resize2 = crop_c_fast(img, 0.8, MajorBlobMap)
+# # resize1 = crop_r_fast(img, 0.9, MajorBlobMap)
+# # resize2 = crop_r(img, 0.9, MajorBlobMap)
 # fig = plt.figure(figsize=(10, 7))
 # rows = 1
 # cols = 2
 # fig.add_subplot(rows, cols, 1)
 # plt.imshow(img)
 # fig.add_subplot(rows, cols, 2)
-# plt.imshow(resize1)
-# fig.add_subplot(rows, cols, 2)
 # plt.imshow(resize2)
+# # fig.add_subplot(rows, cols, 2)
+# # plt.imshow(resize2)
 # plt.show()
-# vanilla_resize = Image.fromarray(resize1)
-# vanilla_resize.save('vanilla.png')
-# major_resize = Image.fromarray(resize2)
-# major_resize.save('majorResize.png')
+# # vanilla_resize = Image.fromarray(resize1)
+# # vanilla_resize.save('vanilla.png')
+# # major_resize = Image.fromarray(resize2)
+# # major_resize.save('majorResize.png')
