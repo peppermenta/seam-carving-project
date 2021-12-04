@@ -116,16 +116,13 @@ def minimum_seam(img):
     Minimum seam backtracking, same size as M
   '''
   r, c, _ = img.shape
-  # energy_map = energy_map_fn(img)
   energy_map = np.zeros((r,c))
   temp = np.zeros((r,c))
+
+  # Combining energy maps
   for func in energy_maps:
-    # print(func(img))
     temp = func(img)
-    # print(np.max(temp), np.min(temp))
     energy_map = np.maximum(np.divide(temp, np.linalg.norm(temp)), energy_map)
-    # print(energy_map)
-  # print("energy map shape", energy_map.shape, img.shape)
   
   energy_map += gradient_energy_map(img)
 
@@ -148,7 +145,8 @@ def minimum_seam(img):
 
   return M, backtrack
 
-img = Image.open('input\eiffel.jpg')
+img = Image.open('input/castle.jpg')
+# img = Image.open('input/eiffel.jpg')
 # img = Image.open('input/sunset2.jpg')
 # img = Image.open('input/boating.jpg')
 # img = Image.open('input/monkey.jpg')
@@ -158,13 +156,8 @@ img = Image.open('input\eiffel.jpg')
 img = np.array(img)
 
 resize1 = crop_c(img, 0.8)
-# resize2 = crop_c(img, 0.8)
-# resize1 = crop_r(img, 0.8, gradient_energy_map)
-# resize2 = crop_r(img, 0.8, dino_energy_map)
 vanilla_resize = Image.fromarray(resize1)
-vanilla_resize.save('output/eiffel_best_map.png')
-# dino_resize = Image.fromarray(resize2)
-# dino_resize.save('output/dog_dino.png')
+vanilla_resize.save('output/castle_best_map.png')
 fig = plt.figure(figsize=(10, 7))
 rows = 1
 cols = 2
@@ -172,6 +165,4 @@ fig.add_subplot(rows, cols, 1)
 plt.imshow(img)
 fig.add_subplot(rows, cols, 2)
 plt.imshow(resize1)
-# fig.add_subplot(rows, cols, 3)
-# plt.imshow(resize2)
 plt.show()

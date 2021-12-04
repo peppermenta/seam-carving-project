@@ -206,8 +206,6 @@ def crop_r_eval(img, saliency_img, scale_r, energy_map_fn):
 img = Image.open('input/dog.jpg')
 img = np.array(img)
 
-energy_maps = [MajorBlobMap, dino_energy_map]
-
 resize1 = crop_c(img, 0.8, gradient_energy_map)
 resize2 = crop_c(img, 0.8, dino_energy_map)
 # resize1 = crop_r(img, 0.8, gradient_energy_map)
